@@ -30,7 +30,7 @@
           
           <div class="mb-8">
             <label class="block text-sm font-medium text-gray-700 mb-3">1. 选择 PDF 文件：</label>
-            <div class="flex items-center justify-center w-full">
+            <div v-if="!splitFileName" class="flex items-center justify-center w-full">
                 <label for="split-dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
                         <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
@@ -42,10 +42,15 @@
             </div>
             
             <div v-if="splitFileName" class="mt-4 p-4 bg-blue-50 rounded-lg flex items-center justify-between border border-blue-100">
-              <span class="text-sm font-medium text-blue-800 truncate pr-4">✅ {{ splitFileName }}</span>
-              <span v-if="splitTotalPages > 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
-                共 {{ splitTotalPages }} 页
-              </span>
+              <div class="flex items-center min-w-0 flex-1 mr-4">
+                <span class="text-sm font-medium text-blue-800 truncate pr-4">✅ {{ splitFileName }}</span>
+                <span v-if="splitTotalPages > 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 whitespace-nowrap">
+                  共 {{ splitTotalPages }} 页
+                </span>
+              </div>
+              <button @click="removeSplitFile" class="p-1 text-gray-400 hover:text-red-500 rounded hover:bg-red-50 transition-colors flex-shrink-0" title="删除文件">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
             </div>
           </div>
 
@@ -219,6 +224,19 @@ const handleSplitFileChange = async (event: Event) => {
   }
 };
 
+// 新增：清除拆分文件函数
+const removeSplitFile = () => {
+  splitFile.value = null;
+  splitFileName.value = '';
+  splitTotalPages.value = 0;
+  customRange.value = '';
+  // 顺便把底层的 input 的 value 清空，防止用户删除后，再次上传同一个文件时不触发 change 事件
+  const input = document.getElementById('split-dropzone-file') as HTMLInputElement;
+  if (input) {
+    input.value = '';
+  }
+};
+
 const finalRangeString = computed(() => {
   return splitMode.value === 'range' ? `${startPage.value}-${endPage.value}` : customRange.value;
 });
@@ -302,7 +320,3 @@ const executeMerge = async () => {
   }
 };
 </script>
-
-<style>
-/* 这里不再需要长长的样式代码啦，交给 Tailwind 处理！ */
-</style>
