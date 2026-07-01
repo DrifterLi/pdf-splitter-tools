@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 额外添加一点平滑过渡，让拖拽感更好 */
+.drag-item {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.drag-item:active {
+  transform: scale(1.02);
+  z-index: 50;
+}
