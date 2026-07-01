@@ -5,17 +5,33 @@ on:
     branches:
       - main # 每次向 main 分支推送代码时触发
 
+# 🔴 新增：显式声明该工作流拥有部署 Pages 的读写权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 允许单次并发部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 🔴 修正：使用标准的 setup-node 来指定 Node 环境
       - name: Set up Node
-        uses: actions/configure-pages@v4
+        uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -23,10 +39,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist # 将编译出的静态文件夹上传
+          path: ./dist
 
       - name: Deploy to GitHub Pages
         id: deployment
